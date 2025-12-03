@@ -12,11 +12,11 @@ uploaded_files = st.file_uploader(
 )
 
 def extract_text(pdf_file):
-        reader = PyPDF2.PdfReader(pdf_file)
-    	text = ""
-    	for page in reader.pages:
+    reader = PyPDF2.PdfReader(pdf_file)
+    text = ""
+    for page in reader.pages:
         text += page.extract_text() or ""
-    	return text
+    return text
 
 def extract_abbreviation_context(text):
     pattern = r'(.{0,50}\b[A-Z]{2,10}(?:&[A-Z]{1,10})?\b.{0,50})'
@@ -24,22 +24,23 @@ def extract_abbreviation_context(text):
     return "\n".join(matches)
 
 def call_llm(prompt):
-    model_name = "llama-3.2-chat"  # confirm in Groq console
+    model_name = "llama-3.3-70b-versatile"  # confirm in Groq console
     try:
         response = requests.post(
-    "https://api.groq.com/openai/v1/chat/completions",  # correct endpoint
-    headers={ "Authorization": f"Bearer {API_KEY}" },
-    json={
-        "model": "llama-3.3-70b-versatile",   # or another supported model from your Groq console
-        "messages": [{"role": "user", "content": prompt}]
-    },
-    timeout=60
-)
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {API_KEY}"},
+            json={
+                "model": model_name,
+                "messages": [{"role": "user", "content": prompt}]
+            },
+            timeout=60
+        )
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
     except Exception as e:
         st.error(f"API error: {e}")
         return ""
+
 def parse_abbreviations(text):
     abbr_dict = {}
     lines = text.splitlines()
@@ -50,6 +51,7 @@ def parse_abbreviations(text):
             if len(parts) == 2:
                 abbr = parts[0].strip()
                 definition = parts[1].strip()
+                # Keep the longest definition if duplicates exist
                 if abbr in abbr_dict:
                     if len(definition) > len(abbr_dict[abbr]):
                         abbr_dict[abbr] = definition
@@ -86,6 +88,7 @@ TEXT SNIPPETS:
                 response_text = call_llm(prompt)
                 abbr_dict = parse_abbreviations(response_text)
 
+                # Merge with global dictionary
                 for abbr, definition in abbr_dict.items():
                     if abbr in merged_abbreviations:
                         if len(definition) > len(merged_abbreviations[abbr]):
