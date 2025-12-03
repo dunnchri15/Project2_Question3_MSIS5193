@@ -29,14 +29,14 @@ def extract_abbreviation_context(text):
 
 def call_llm(prompt):
     """Call Groq LLM and return text response."""
+    model_name = "llama-3.2-chat"  # confirm in Groq console
     try:
         response = requests.post(
-            "https://api.groq.com/v1/llm/completions",  # <-- updated endpoint
+            f"https://api.groq.com/v1/llms/{model_name}/completions",
             headers={"Authorization": f"Bearer {API_KEY}"},
             json={
-                "model": "llama-3.2-chat",  # <-- use a currently supported model
                 "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.0  # optional: make output deterministic
+                "temperature": 0.0
             },
             timeout=60
         )
@@ -45,7 +45,6 @@ def call_llm(prompt):
     except Exception as e:
         st.error(f"API error: {e}")
         return ""
-
 def parse_abbreviations(text):
     """Parse LLM output into a dictionary {ABBR: definition}."""
     abbr_dict = {}
