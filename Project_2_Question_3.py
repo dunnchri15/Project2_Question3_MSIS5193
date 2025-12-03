@@ -1,9 +1,13 @@
 import streamlit as st
 import requests
+import PyPDF2
+import re
 
+# Load API key from Streamlit secrets
 API_KEY = st.secrets["GROQ_API_KEY"]
 
 def call_llm(prompt):
+    """Call Groq API to get LLM response."""
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
         headers={"Authorization": f"Bearer {API_KEY}"},
@@ -13,13 +17,15 @@ def call_llm(prompt):
         }
     )
     return response.json()["choices"][0]["message"]["content"]
-import PyPDF2
-import re
 
-st.title("Abbreviation Index Generator")
+st.title("Multi-PDF Abbreviation Index Generator")
 
-# Upload multiple PDFs
-uploaded_files = st.file_uploader("Upload PDFs", type=["pdf"], accept_multiple_files=True)
+# Allow multiple PDF uploads
+uploaded_files = st.file_uploader(
+    "Upload PDFs",
+    type=["pdf"],
+    accept_multiple_files=True
+)
 
 def extract_text(pdf_file):
     """Extract all text from a PDF."""
@@ -37,7 +43,7 @@ def extract_abbreviation_context(text):
 
 def parse_abbreviations(text):
     """
-    Parse the LLM output into a dictionary {ABBR: definition}
+    Parse the LLM output into a dictionary {ABBR: definition}.
     Assumes output is bullet points like: • ABBR: definition
     """
     abbr_dict = {}
@@ -49,7 +55,7 @@ def parse_abbreviations(text):
             if len(parts) == 2:
                 abbr = parts[0].strip()
                 definition = parts[1].strip()
-                # Keep the longest definition if duplicates exist
+                # Keep longest definition if duplicates exist
                 if abbr in abbr_dict:
                     if len(definition) > len(abbr_dict[abbr]):
                         abbr_dict[abbr] = definition
@@ -57,6 +63,7 @@ def parse_abbreviations(text):
                     abbr_dict[abbr] = definition
     return abbr_dict
 
+# Button to generate merged abbreviation index
 if st.button("Generate Merged Abbreviation Index"):
     if not uploaded_files:
         st.error("Please upload at least one PDF.")
@@ -83,16 +90,13 @@ RULES:
 TEXT SNIPPETS:
 {snippets}
 """
-                response = client.chat(
-                    model="llama3.2",
-                    messages=[{"role": "user", "content": prompt}]
-                )
+                # Call Groq API
+                response_text = call_llm(prompt)
+                abbr_dict = parse_abbreviations(response_text)
 
-                abbr_dict = parse_abbreviations(response["message"]["content"])
-                # Merge with global dictionary
+                # Merge abbreviations
                 for abbr, definition in abbr_dict.items():
                     if abbr in merged_abbreviations:
-                        # Keep the longest definition
                         if len(definition) > len(merged_abbreviations[abbr]):
                             merged_abbreviations[abbr] = definition
                     else:
