@@ -3,7 +3,7 @@ import requests
 import PyPDF2
 import re
 
-# GROQ_API_KEY = "your_actual_key_here"
+# Get your API key from Streamlit secrets
 API_KEY = st.secrets["GROQ_API_KEY"]
 
 st.title("Multi-PDF Abbreviation Index Generator")
@@ -31,11 +31,12 @@ def call_llm(prompt):
     """Call Groq LLM and return text response."""
     try:
         response = requests.post(
-            "https://api.groq.com/v1/chat/completions",
+            "https://api.groq.com/v1/llm/completions",  # <-- updated endpoint
             headers={"Authorization": f"Bearer {API_KEY}"},
             json={
-                "model": "llama-3.2-70b",
-                "messages": [{"role": "user", "content": prompt}]
+                "model": "llama-3.2-chat",  # <-- use a currently supported model
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.0  # optional: make output deterministic
             },
             timeout=60
         )
@@ -46,10 +47,7 @@ def call_llm(prompt):
         return ""
 
 def parse_abbreviations(text):
-    """
-    Parse LLM output into a dictionary {ABBR: definition}.
-    Assumes output is bullet points like: • ABBR: definition
-    """
+    """Parse LLM output into a dictionary {ABBR: definition}."""
     abbr_dict = {}
     lines = text.splitlines()
     for line in lines:
@@ -59,7 +57,6 @@ def parse_abbreviations(text):
             if len(parts) == 2:
                 abbr = parts[0].strip()
                 definition = parts[1].strip()
-                # Keep the longest definition if duplicates exist
                 if abbr in abbr_dict:
                     if len(definition) > len(abbr_dict[abbr]):
                         abbr_dict[abbr] = definition
@@ -96,10 +93,8 @@ TEXT SNIPPETS:
                 response_text = call_llm(prompt)
                 abbr_dict = parse_abbreviations(response_text)
 
-                # Merge with global dictionary
                 for abbr, definition in abbr_dict.items():
                     if abbr in merged_abbreviations:
-                        # Keep the longest definition
                         if len(definition) > len(merged_abbreviations[abbr]):
                             merged_abbreviations[abbr] = definition
                     else:
