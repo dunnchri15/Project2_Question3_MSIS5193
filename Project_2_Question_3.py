@@ -32,14 +32,14 @@ def call_llm(prompt):
     model_name = "llama-3.2-chat"  # confirm in Groq console
     try:
         response = requests.post(
-            f"https://api.groq.com/v1/llms/{model_name}/completions",
-            headers={"Authorization": f"Bearer {API_KEY}"},
-            json={
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.0
-            },
-            timeout=60
-        )
+    "https://api.groq.com/openai/v1/chat/completions",  # correct endpoint
+    headers={ "Authorization": f"Bearer {API_KEY}" },
+    json={
+        "model": "llama-3.3-70b-versatile",   # or another supported model from your Groq console
+        "messages": [{"role": "user", "content": prompt}]
+    },
+    timeout=60
+)
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
     except Exception as e:
