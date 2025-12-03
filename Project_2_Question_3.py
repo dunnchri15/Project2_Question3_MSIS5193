@@ -34,7 +34,7 @@ def call_llm(prompt):
             "https://api.groq.com/v1/chat/completions",
             headers={"Authorization": f"Bearer {API_KEY}"},
             json={
-                "model": "llama-3.2-chat",
+                "model": "llama-3.2-70b",
                 "messages": [{"role": "user", "content": prompt}]
             },
             timeout=60
