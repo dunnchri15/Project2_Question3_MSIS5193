@@ -3,32 +3,27 @@ import requests
 import PyPDF2
 import re
 
-# Get your API key from Streamlit secrets
 API_KEY = st.secrets["GROQ_API_KEY"]
 
 st.title("Multi-PDF Abbreviation Index Generator")
 
-# Upload multiple PDFs
 uploaded_files = st.file_uploader(
     "Upload PDFs", type=["pdf"], accept_multiple_files=True
 )
 
 def extract_text(pdf_file):
-    """Extract all text from a PDF."""
-    reader = PyPDF2.PdfReader(pdf_file)
+        reader = PyPDF2.PdfReader(pdf_file)
     text = ""
     for page in reader.pages:
         text += page.extract_text() or ""
     return text
 
 def extract_abbreviation_context(text):
-    """Return lines/snippets with candidate abbreviations."""
     pattern = r'(.{0,50}\b[A-Z]{2,10}(?:&[A-Z]{1,10})?\b.{0,50})'
     matches = re.findall(pattern, text)
     return "\n".join(matches)
 
 def call_llm(prompt):
-    """Call Groq LLM and return text response."""
     model_name = "llama-3.2-chat"  # confirm in Groq console
     try:
         response = requests.post(
@@ -46,7 +41,6 @@ def call_llm(prompt):
         st.error(f"API error: {e}")
         return ""
 def parse_abbreviations(text):
-    """Parse LLM output into a dictionary {ABBR: definition}."""
     abbr_dict = {}
     lines = text.splitlines()
     for line in lines:
