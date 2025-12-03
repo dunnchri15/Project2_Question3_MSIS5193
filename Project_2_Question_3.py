@@ -13,10 +13,10 @@ uploaded_files = st.file_uploader(
 
 def extract_text(pdf_file):
         reader = PyPDF2.PdfReader(pdf_file)
-    text = ""
-    for page in reader.pages:
+    	text = ""
+    	for page in reader.pages:
         text += page.extract_text() or ""
-    return text
+    	return text
 
 def extract_abbreviation_context(text):
     pattern = r'(.{0,50}\b[A-Z]{2,10}(?:&[A-Z]{1,10})?\b.{0,50})'
