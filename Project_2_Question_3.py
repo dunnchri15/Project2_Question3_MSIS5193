@@ -16,7 +16,6 @@ def call_llm(prompt):
 import PyPDF2
 import re
 
-client = Client()
 st.title("Abbreviation Index Generator")
 
 # Upload multiple PDFs
