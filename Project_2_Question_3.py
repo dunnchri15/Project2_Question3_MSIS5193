@@ -1,5 +1,18 @@
 import streamlit as st
-from ollama import Client
+import requests
+
+API_KEY = st.secrets["GROQ_API_KEY"]
+
+def call_llm(prompt):
+    response = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        json={
+            "model": "llama-3.1-70b-versatile",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+    )
+    return response.json()["choices"][0]["message"]["content"]
 import PyPDF2
 import re
 
