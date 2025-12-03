@@ -3,8 +3,6 @@ import requests
 import PyPDF2
 import re
 
-# Load your Groq API key from Streamlit secrets
-# Make sure your secrets.toml contains:
 # GROQ_API_KEY = "your_actual_key_here"
 API_KEY = st.secrets["GROQ_API_KEY"]
 
@@ -33,7 +31,7 @@ def call_llm(prompt):
     """Call Groq LLM and return text response."""
     try:
         response = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
+            "https://api.groq.com/openai/v1/llm/completions",
             headers={"Authorization": f"Bearer {API_KEY}"},
             json={
                 "model": "llama-3.2-chat",
