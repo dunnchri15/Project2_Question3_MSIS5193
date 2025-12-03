@@ -7,7 +7,7 @@ import re
 API_KEY = st.secrets["GROQ_API_KEY"]
 
 def call_llm(prompt):
-    """Call Groq API to get LLM response."""
+    """Call Groq API to get LLM response safely."""
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
         headers={"Authorization": f"Bearer {API_KEY}"},
@@ -16,8 +16,23 @@ def call_llm(prompt):
             "messages": [{"role": "user", "content": prompt}]
         }
     )
-    return response.json()["choices"][0]["message"]["content"]
+    try:
+        data = response.json()
+    except Exception:
+        st.error(f"Invalid response from API:\n{response.text}")
+        return ""
 
+    # Check if there is an error key
+    if "error" in data:
+        st.error(f"API Error: {data['error']}")
+        return ""
+
+    # Check if 'choices' exist
+    if "choices" not in data or len(data["choices"]) == 0:
+        st.error(f"No choices returned from API. Full response:\n{data}")
+        return ""
+
+    return data["choices"][0]["message"]["content"]
 st.title("Multi-PDF Abbreviation Index Generator")
 
 # Allow multiple PDF uploads
