@@ -6,7 +6,7 @@ import re
 st.title("Multi-PDF Abbreviation Index Generator")
 
 try:
-    API_KEY = st.secrets["GROQ_API_KEY"]
+    API_KEY = st.secrets["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"]
 except KeyError:
     st.error("GROQ_API_KEY not found in Streamlit secrets. Please add it.")
     st.stop()
@@ -33,13 +33,14 @@ def extract_abbreviation_context(text):
 
 def call_llm(prompt):
     try:
-        response = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {API_KEY}"},
-            json={
-                "model": "llama-3.1-70b-versatile",
-                "messages": [{"role": "user", "content": prompt}]
-            },
+       response = requests.post(
+    "https://api.groq.com/openai/v1/chat/completions",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={
+        "model": "llama-3.2-chat",  # <- updated model
+        "messages": [{"role": "user", "content": prompt}]
+    }
+)
             timeout=60  # seconds
         )
         data = response.json()
