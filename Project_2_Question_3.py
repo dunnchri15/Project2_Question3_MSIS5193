@@ -36,7 +36,7 @@ def call_llm(prompt):
     try:
         response = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {API_KEY}"},
+            headers={"Authorization": f"Bearer {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}"},
             json={
                 "model": "llama-3.2-chat",
                 "messages": [{"role": "user", "content": prompt}]
